@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style type="text/css">
+        p {
+          color: #000000;
+        }
+        img {
+            width: 1500px;
+        }
+        body {
+            background-image: url(images/Grassy\ Background.png);
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+        }
+        #drink {
+            top: 425px;
+            left: 1300px;
+        }
+
+        #feed {
+            top: 425px;
+            left: 400px;
+        }
+
+        #bathe {
+            top: 740px;
+            right: -100px;
+        }
+
+        .button {
+            position: absolute;
+            transform: scale(.39);
+        }
+
+        #duck {
+            position: absolute;
+            bottom: 0;
+            -webkit-transform: scaleX(-1);
+            transform: scaleX(-1);
+        }
+
+        #container {
+            width: 10px;
+            height: 950px;
+            position: relative;
+            background: transparent;
+        }
+
+        #sun {
+            position: absolute;
+            height: 200px;
+            width: 200px;
+            top: 25px;
+            left: 25px;
+        }
+        
+        </style>
+</head>
+<body>
+
+    <div>
+        <img id="sun" src="images/animated sun.gif" alt="">
+    </div>
+
+<div class="button" id="drink">
+    <input type="image" src="images/Water.png" onclick="moveToWater();drinkWater();"/>
+</div>
+    
+<div class="button" id="feed">
+    <input type="image" src="images/Bread.png" onclick="moveToBread();eatFood();"/>
+</div>
+
+<div class="button" id="bathe">
+    <input type="image" src="images/Soap.png" onclick="moveToSoap();bathe();"/>
+</div>
+
+<div id="container">
+<div id="duck">
+    <input type="image" src="images/DuckAnim.gif" onclick="sayHello();"/>
+</div>
+</div>
+
+<script>
+
+function moveToWater() {
+  let id = null;
+  const elem = document.getElementById("duck");   
+  let posX = 0;
+  let posY = 0;
+  clearInterval(id);
+  id = setInterval(frame, 5);
+  function frame() {
+    if (posY == 300) {
+      clearInterval(id);
+    } else {
+      posY++;
+      posX += 4; 
+      elem.style.bottom = posY + "px";
+      elem.style.left = posX + "px"; 
+    }
+  }
+}
+
+function moveToBread() {
+  let id = null;
+  const elem = document.getElementById("duck");   
+  let posX = 0;
+  let posY = 0;
+  clearInterval(id);
+  id = setInterval(frame, 5);
+  function frame() {
+    if (posY == 350) {
+      clearInterval(id);
+    } else {
+      posY++;
+      posX += 1.1; 
+      elem.style.bottom = posY + "px";
+      elem.style.left = posX + "px"; 
+    }
+  }
+}
+
+function moveToSoap() {
+  let id = null;
+  const elem = document.getElementById("duck");   
+  let posX = 0;
+  let posY = 0;
+  clearInterval(id);
+  id = setInterval(frame, 1);
+  function frame() {
+    if (posX == 1250) {
+      clearInterval(id);
+    } else {
+      posX += 2;
+      elem.style.left = posX + "px";
+      elem.style.bottom = 0
+    }
+  }
+}
+
+    function eatFood() {
+        setTimeout(function(){ alert("Nom nom nom! Thank you!!!"); }, 1765);
+    }
+
+    function drinkWater() {
+        setTimeout(function(){ alert("Gulp gulp gulp! Thank you!!!"); }, 1750);
+    }
+
+    function bathe() {
+        setTimeout(function(){ alert("Splish splash, I'm takin' a bath! Thank you!!!"); }, 2550);
+    }
+
+    function sayHello() {
+        alert("Hey! My name is Jeff!");
+    }
+
+    </script>
+
+</body>
+</html> 
