@@ -1,162 +1,796 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <style type="text/css">
-        p {
-          color: #000000;
-        }
-        img {
-            width: 1500px;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeff's Cozy Meadow</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
         body {
-            background-image: url(images/Grassy\ Background.png);
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            background-size: cover;
+            font-family: 'Quicksand', sans-serif;
+            user-select: none;
         }
-        #drink {
-            top: 425px;
-            left: 1300px;
-        }
-
-        #feed {
-            top: 425px;
-            left: 400px;
-        }
-
-        #bathe {
-            top: 740px;
-            right: -100px;
-        }
-
-        .button {
-            position: absolute;
-            transform: scale(.39);
-        }
-
-        #duck {
-            position: absolute;
-            bottom: 0;
-            -webkit-transform: scaleX(-1);
-            transform: scaleX(-1);
-        }
-
-        #container {
-            width: 10px;
-            height: 950px;
-            position: relative;
-            background: transparent;
-        }
-
-        #sun {
-            position: absolute;
-            height: 200px;
-            width: 200px;
-            top: 25px;
-            left: 25px;
+        .heading-font {
+            font-family: 'Fredoka One', cursive;
         }
         
-        </style>
-</head>
-<body>
+        /* Smooth movement transition for Jeff */
+        #duck {
+            transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1), bottom 1.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+        }
 
-    <div>
-        <img id="sun" src="images/animated sun.gif" alt="">
+        /* Idle Bobbing Animation */
+        @keyframes bob {
+            0%, 100% { transform: translateY(0px) scaleY(1); }
+            50% { transform: translateY(-6px) scaleY(0.98); }
+        }
+        .animate-bob {
+            animation: bob 3s ease-in-out infinite;
+        }
+
+        /* Waddle Animation while moving */
+        @keyframes waddle {
+            0%, 100% { transform: rotate(-5deg) translateY(0); }
+            50% { transform: rotate(5deg) translateY(-8px); }
+        }
+        .animate-waddle {
+            animation: waddle 0.25s ease-in-out infinite;
+        }
+
+        /* Splash Animation for bathing */
+        @keyframes splash {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-15px) scale(1.05) rotate(3deg); }
+        }
+        .animate-splash {
+            animation: splash 0.4s ease-in-out infinite;
+        }
+
+        /* Sun spinning animation */
+        @keyframes spin-slow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spin-slow 20s linear infinite;
+        }
+
+        /* Particle animations */
+        @keyframes float-up {
+            0% { transform: translateY(0) scale(0.8); opacity: 1; }
+            100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
+        }
+        .bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            animation: float-up 1s ease-out forwards;
+            pointer-events: none;
+        }
+        .crumb {
+            position: absolute;
+            background: #d7ccc8;
+            border-radius: 3px;
+            animation: float-up 0.8s ease-out forwards;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4 transition-colors duration-1000">
+
+    <div class="w-full max-w-4xl bg-white/10 backdrop-blur-md rounded-3xl p-6 shadow-2xl border border-white/20 flex flex-col gap-6 relative overflow-hidden">
+        
+        <!-- Header / Status Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-4 z-10">
+            <div>
+                <h1 class="heading-font text-3xl text-white tracking-wider flex items-center gap-2 drop-shadow-md">
+                    <span>🦆</span> Jeff's Meadow
+                </h1>
+                <p class="text-white/80 text-sm">Your cozy digital companion</p>
+            </div>
+            
+            <!-- XP and Level -->
+            <div class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 flex items-center gap-3">
+                <div class="text-right">
+                    <span class="text-xs text-yellow-300 font-bold uppercase tracking-wider">Level</span>
+                    <div class="text-xl font-bold text-white heading-font" id="level-display">1</div>
+                </div>
+                <div class="h-8 w-[1px] bg-white/20"></div>
+                <div>
+                    <span class="text-xs text-white/60">XP to Level Up</span>
+                    <div class="w-28 bg-black/30 h-2.5 rounded-full mt-1 overflow-hidden">
+                        <div id="xp-bar" class="bg-yellow-400 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Interactive Screen Area -->
+        <div id="meadow" class="relative w-full h-[450px] rounded-2xl overflow-hidden shadow-inner transition-all duration-1000 bg-gradient-to-b from-sky-300 via-sky-200 to-emerald-100 border border-white/20">
+            
+            <!-- Starry Sky (Only visible during night mode) -->
+            <div id="stars" class="absolute inset-0 bg-slate-950/85 opacity-0 transition-opacity duration-1000 pointer-events-none z-0">
+                <!-- Stars will be injected dynamically -->
+            </div>
+
+            <!-- Sun / Moon Toggle -->
+            <button onclick="toggleDayNight()" id="celestial-btn" class="absolute top-6 left-6 z-10 transition-transform hover:scale-110 active:scale-95 focus:outline-none" title="Click to change time of day">
+                <!-- Golden SVG Sun -->
+                <svg id="sun-svg" class="w-16 h-16 animate-spin-slow transition-all duration-1000" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="22" fill="#FDB813" />
+                    <!-- Sunbeams -->
+                    <path d="M50,10 L50,20 M50,80 L50,90 M10,50 L20,50 M80,50 L90,50 M22,22 L30,30 M70,70 L78,78 M22,70 L30,62 M70,30 L78,22" stroke="#FDB813" stroke-width="6" stroke-linecap="round" />
+                </svg>
+                <!-- Silver SVG Moon (Hidden by default) -->
+                <svg id="moon-svg" class="w-14 h-14 hidden transition-all duration-1000 filter drop-shadow-md" viewBox="0 0 100 100">
+                    <path d="M50,20 A30,30 0 1,0 80,50 A22,22 0 1,1 50,20 Z" fill="#E2E8F0" />
+                </svg>
+            </button>
+
+            <!-- Rolling Hills (Background Art) -->
+            <div class="absolute bottom-0 inset-x-0 h-40 pointer-events-none z-0">
+                <!-- Far Hill -->
+                <svg class="absolute bottom-0 w-[150%] left-[-20%] h-36 text-emerald-300/60 transition-colors duration-1000" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path d="M0,100 C30,40 70,70 100,100 Z" fill="currentColor"/>
+                </svg>
+                <!-- Near Hill -->
+                <svg class="absolute bottom-0 w-[150%] left-[-10%] h-28 text-emerald-400 transition-colors duration-1000" id="near-hill" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path d="M0,100 C40,50 80,40 100,100 Z" fill="currentColor"/>
+                </svg>
+            </div>
+
+            <!-- Stationary Interactive Stations -->
+            <!-- Water Station -->
+            <div id="station-water" class="absolute bottom-4 left-8 z-10 group text-center cursor-pointer transform hover:scale-105 transition-transform" onclick="interact('water')">
+                <div class="relative">
+                    <!-- Glass Cup / Water bowl -->
+                    <svg class="w-14 h-14 filter drop-shadow-md" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 48C12 54.6 17.4 60 24 60H40C46.6 60 52 54.6 52 48V16H12V48Z" fill="#93C5FD" opacity="0.8"/>
+                        <path d="M12 28C18 28 22 24 28 24C34 24 38 28 44 28C50 28 52 25 52 25V48C52 54.6 46.6 60 40 60H24C17.4 60 12 54.6 12 48V28Z" fill="#3B82F6"/>
+                        <rect x="8" y="10" width="48" height="6" rx="3" fill="#E2E8F0"/>
+                    </svg>
+                    <span class="absolute -top-1 -right-1 bg-blue-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity">💧</span>
+                </div>
+                <span class="text-xs font-bold text-slate-700 bg-white/70 px-2 py-0.5 rounded-full shadow-sm">Water Cup</span>
+            </div>
+
+            <!-- Bread Station -->
+            <div id="station-bread" class="absolute bottom-16 right-44 z-10 group text-center cursor-pointer transform hover:scale-105 transition-transform" onclick="interact('bread')">
+                <div class="relative">
+                    <!-- Cute bread slice -->
+                    <svg class="w-14 h-14 filter drop-shadow-md" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 24C10 16.3 16.3 10 24 10H40C47.7 10 54 16.3 54 24C54 27.5 52.5 31 50 33V48C50 53.5 45.5 58 40 58H24C18.5 58 14 53.5 14 48V33C11.5 31 10 27.5 10 24Z" fill="#D7CCC8"/>
+                        <path d="M14 26C14 19.4 19.4 14 26 14H38C44.6 14 50 19.4 50 26C50 29 48.5 31.5 46.5 33.5C45.5 34.5 45 36 45 37.5V48C45 50.8 42.8 53 40 53H24C21.2 53 19 50.8 19 48V37.5C19 36 18.5 34.5 17.5 33.5C15.5 31.5 14 29 14 26Z" fill="#FFE0B2"/>
+                        <circle cx="26" cy="28" r="3" fill="#5D4037"/>
+                        <circle cx="38" cy="28" r="3" fill="#5D4037"/>
+                        <path d="M29 34C31 36 33 36 35 34" stroke="#5D4037" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span class="absolute -top-1 -right-1 bg-amber-600 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity">🍞</span>
+                </div>
+                <span class="text-xs font-bold text-slate-700 bg-white/70 px-2 py-0.5 rounded-full shadow-sm">Fresh Bread</span>
+            </div>
+
+            <!-- Soap Station -->
+            <div id="station-soap" class="absolute bottom-4 right-8 z-10 group text-center cursor-pointer transform hover:scale-105 transition-transform" onclick="interact('soap')">
+                <div class="relative">
+                    <!-- Cute Soap and bubbles -->
+                    <svg class="w-14 h-14 filter drop-shadow-md" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="10" y="20" width="44" height="28" rx="10" fill="#F472B6"/>
+                        <rect x="14" y="24" width="36" height="20" rx="6" fill="#FBCFE8"/>
+                        <!-- Bubble details -->
+                        <circle cx="20" cy="12" r="4" fill="#93C5FD" opacity="0.6"/>
+                        <circle cx="44" cy="14" r="6" fill="#93C5FD" opacity="0.6"/>
+                        <circle cx="52" cy="25" r="3" fill="#93C5FD" opacity="0.6"/>
+                    </svg>
+                    <span class="absolute -top-1 -right-1 bg-pink-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity">🧼</span>
+                </div>
+                <span class="text-xs font-bold text-slate-700 bg-white/70 px-2 py-0.5 rounded-full shadow-sm">Sudsy Soap</span>
+            </div>
+
+            <!-- Speech Bubble Above Jeff -->
+            <div id="speech-bubble" class="absolute z-30 bg-white text-slate-800 px-4 py-2 rounded-2xl shadow-lg border-2 border-slate-200 text-sm font-bold opacity-0 transition-all duration-300 transform translate-y-2 pointer-events-none max-w-xs text-center">
+                <div class="relative">
+                    <span id="speech-text">Hey there!</span>
+                    <!-- Speech bubble tail -->
+                    <div class="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 w-3 h-3 bg-white border-r-2 border-b-2 border-slate-200 rotate-45"></div>
+                </div>
+            </div>
+
+            <!-- JEFF THE DUCK -->
+            <div id="duck" class="absolute bottom-8 left-[40%] z-25 cursor-pointer origin-bottom" onclick="petJeff()">
+                <div class="animate-bob relative" id="duck-sprite">
+                    <!-- Beautiful Customizable Vector Duck -->
+                    <svg class="w-24 h-24 filter drop-shadow-md" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Duck Body -->
+                        <path d="M20 65C20 50 35 45 55 45C70 45 85 52 85 68C85 80 70 85 50 85C30 85 20 78 20 65Z" fill="#FBBF24"/>
+                        <!-- Tail Feather -->
+                        <path d="M15 62C10 55 12 45 22 48C18 42 22 36 30 42C26 48 26 55 20 62Z" fill="#F59E0B"/>
+                        <!-- Duck Wing -->
+                        <path id="duck-wing" d="M40 60C40 55 52 52 62 60C62 65 52 70 42 66C40 64 40 62 40 60Z" fill="#F59E0B" class="origin-center transition-transform duration-200"/>
+                        <!-- Duck Neck & Head -->
+                        <path d="M60 55C65 55 72 45 72 32C72 20 88 20 88 32C88 45 75 62 60 62" fill="#FBBF24"/>
+                        <circle cx="78" cy="28" r="10" fill="#FBBF24"/>
+                        <!-- Cute Blush -->
+                        <circle id="duck-blush" cx="74" cy="34" r="4" fill="#F43F5E" opacity="0"/>
+                        <!-- Duck Eye -->
+                        <circle cx="82" cy="26" r="2.5" fill="#1E293B"/>
+                        <circle cx="83" cy="25" r="0.8" fill="white"/>
+                        <!-- Duck Beak -->
+                        <path d="M86 26C92 24 96 28 94 31C90 34 86 32 86 26Z" fill="#F97316"/>
+                        <!-- Duck Feet -->
+                        <path d="M45 84C45 88 42 90 38 90" stroke="#F97316" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M55 84C55 88 58 90 62 90" stroke="#F97316" stroke-width="4" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Night Overlay Lighting and fireflies -->
+            <div id="night-overlay" class="absolute inset-0 bg-indigo-950/20 mix-blend-color-burn opacity-0 transition-opacity duration-1000 pointer-events-none z-20"></div>
+
+        </div>
+
+        <!-- Dashboard and Care Controls -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 z-10">
+            
+            <!-- Pet Stats Card -->
+            <div class="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10 flex flex-col gap-4">
+                <h3 class="text-white font-bold text-lg flex items-center gap-2">
+                    📊 Jeff's Vitals <span class="text-xs text-white/50">(Slowly drain over time)</span>
+                </h3>
+                
+                <div class="space-y-3">
+                    <!-- Hunger -->
+                    <div>
+                        <div class="flex justify-between text-xs text-white/80 mb-1">
+                            <span>Hunger (Bread)</span>
+                            <span id="hunger-pct" class="font-bold">80%</span>
+                        </div>
+                        <div class="w-full bg-black/20 h-3 rounded-full overflow-hidden">
+                            <div id="hunger-bar" class="bg-amber-400 h-full rounded-full transition-all duration-500" style="width: 80%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Thirst -->
+                    <div>
+                        <div class="flex justify-between text-xs text-white/80 mb-1">
+                            <span>Thirst (Water)</span>
+                            <span id="thirst-pct" class="font-bold">75%</span>
+                        </div>
+                        <div class="w-full bg-black/20 h-3 rounded-full overflow-hidden">
+                            <div id="thirst-bar" class="bg-blue-400 h-full rounded-full transition-all duration-500" style="width: 75%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Hygiene -->
+                    <div>
+                        <div class="flex justify-between text-xs text-white/80 mb-1">
+                            <span>Hygiene (Bath)</span>
+                            <span id="hygiene-pct" class="font-bold">60%</span>
+                        </div>
+                        <div class="w-full bg-black/20 h-3 rounded-full overflow-hidden">
+                            <div id="hygiene-bar" class="bg-pink-400 h-full rounded-full transition-all duration-500" style="width: 60%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Happiness -->
+                    <div>
+                        <div class="flex justify-between text-xs text-white/80 mb-1">
+                            <span>Happiness (Love)</span>
+                            <span id="happiness-pct" class="font-bold">90%</span>
+                        </div>
+                        <div class="w-full bg-black/20 h-3 rounded-full overflow-hidden">
+                            <div id="happiness-bar" class="bg-emerald-400 h-full rounded-full transition-all duration-500" style="width: 90%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pet Interactive Panel -->
+            <div class="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10 flex flex-col justify-between gap-4">
+                <div>
+                    <h3 class="text-white font-bold text-lg mb-2">🎈 Companion Controls</h3>
+                    <p class="text-white/70 text-xs leading-relaxed">
+                        Keep Jeff healthy, clean, and loved! Click any of the stations in the meadow or use the quick-action controls below to interact with him. Click Jeff directly to pet him!
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="interact('bread')" class="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-95 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all focus:outline-none text-sm">
+                        🍞 Feed Bread
+                    </button>
+                    <button onclick="interact('water')" class="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 active:scale-95 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all focus:outline-none text-sm">
+                        💧 Give Water
+                    </button>
+                    <button onclick="interact('soap')" class="flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-400 hover:to-pink-500 active:scale-95 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all focus:outline-none text-sm">
+                        🧼 Give Bath
+                    </button>
+                    <button onclick="petJeff()" class="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 active:scale-95 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all focus:outline-none text-sm">
+                        ❤️ Pet Jeff
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
     </div>
 
-<div class="button" id="drink">
-    <input type="image" src="images/Water.png" onclick="moveToWater();drinkWater();"/>
-</div>
-    
-<div class="button" id="feed">
-    <input type="image" src="images/Bread.png" onclick="moveToBread();eatFood();"/>
-</div>
+    <script>
+        // --- Web Audio Synthesizer for Retro/Cozy Sounds ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-<div class="button" id="bathe">
-    <input type="image" src="images/Soap.png" onclick="moveToSoap();bathe();"/>
-</div>
+        function playSound(type) {
+            // Ensure audio context is unlocked/active
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
 
-<div id="container">
-<div id="duck">
-    <input type="image" src="images/DuckAnim.gif" onclick="sayHello();"/>
-</div>
-</div>
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
 
-<script>
+            const now = audioCtx.currentTime;
 
-function moveToWater() {
-  let id = null;
-  const elem = document.getElementById("duck");   
-  let posX = 0;
-  let posY = 0;
-  clearInterval(id);
-  id = setInterval(frame, 5);
-  function frame() {
-    if (posY == 300) {
-      clearInterval(id);
-    } else {
-      posY++;
-      posX += 4; 
-      elem.style.bottom = posY + "px";
-      elem.style.left = posX + "px"; 
-    }
-  }
-}
+            if (type === 'quack') {
+                // Quack sound: short, swept bandpass-like sound
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(320, now);
+                osc.frequency.exponentialRampToValueAtTime(580, now + 0.05);
+                osc.frequency.exponentialRampToValueAtTime(300, now + 0.15);
 
-function moveToBread() {
-  let id = null;
-  const elem = document.getElementById("duck");   
-  let posX = 0;
-  let posY = 0;
-  clearInterval(id);
-  id = setInterval(frame, 5);
-  function frame() {
-    if (posY == 350) {
-      clearInterval(id);
-    } else {
-      posY++;
-      posX += 1.1; 
-      elem.style.bottom = posY + "px";
-      elem.style.left = posX + "px"; 
-    }
-  }
-}
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+                osc.start(now);
+                osc.stop(now + 0.18);
+            } 
+            else if (type === 'gulp') {
+                // Liquid sound
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(400, now + 0.12);
 
-function moveToSoap() {
-  let id = null;
-  const elem = document.getElementById("duck");   
-  let posX = 0;
-  let posY = 0;
-  clearInterval(id);
-  id = setInterval(frame, 1);
-  function frame() {
-    if (posX == 1250) {
-      clearInterval(id);
-    } else {
-      posX += 2;
-      elem.style.left = posX + "px";
-      elem.style.bottom = 0
-    }
-  }
-}
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            } 
+            else if (type === 'nom') {
+                // Crunching sound
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.setValueAtTime(40, now + 0.08);
 
-    function eatFood() {
-        setTimeout(function(){ alert("Nom nom nom! Thank you!!!"); }, 1765);
-    }
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            } 
+            else if (type === 'splash') {
+                // White noise approximation using rapid frequency oscillation
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.2);
 
-    function drinkWater() {
-        setTimeout(function(){ alert("Gulp gulp gulp! Thank you!!!"); }, 1750);
-    }
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            }
+            else if (type === 'level') {
+                // Cheerful chord
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
 
-    function bathe() {
-        setTimeout(function(){ alert("Splish splash, I'm takin' a bath! Thank you!!!"); }, 2550);
-    }
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            }
+        }
 
-    function sayHello() {
-        alert("Hey! My name is Jeff!");
-    }
 
+        // --- Game State ---
+        let isDay = true;
+        let isMoving = false;
+        let level = 1;
+        let xp = 0;
+        const xpNeeded = 100;
+
+        const stats = {
+            hunger: 80,
+            thirst: 75,
+            hygiene: 60,
+            happiness: 90
+        };
+
+        // Element references
+        const duck = document.getElementById('duck');
+        const duckSprite = document.getElementById('duck-sprite');
+        const duckWing = document.getElementById('duck-wing');
+        const duckBlush = document.getElementById('duck-blush');
+        const speechBubble = document.getElementById('speech-bubble');
+        const speechText = document.getElementById('speech-text');
+
+        // Initial setup
+        window.addEventListener('load', () => {
+            generateStars();
+            // Slow stat decay over time
+            setInterval(decayStats, 5000);
+            showSpeechBubble("Hi there! I'm Jeff!", 3000);
+        });
+
+        // Decay mechanics
+        function decayStats() {
+            stats.hunger = Math.max(0, stats.hunger - 1);
+            stats.thirst = Math.max(0, stats.thirst - 2);
+            stats.hygiene = Math.max(0, stats.hygiene - 1);
+            
+            // Happiness drops faster if other needs are fully neglected
+            let happinessLoss = 1;
+            if (stats.hunger < 20 || stats.thirst < 20 || stats.hygiene < 20) {
+                happinessLoss = 3;
+            }
+            stats.happiness = Math.max(0, stats.happiness - happinessLoss);
+
+            updateStatUI();
+        }
+
+        function updateStatUI() {
+            document.getElementById('hunger-bar').style.width = `${stats.hunger}%`;
+            document.getElementById('hunger-pct').innerText = `${stats.hunger}%`;
+
+            document.getElementById('thirst-bar').style.width = `${stats.thirst}%`;
+            document.getElementById('thirst-pct').innerText = `${stats.thirst}%`;
+
+            document.getElementById('hygiene-bar').style.width = `${stats.hygiene}%`;
+            document.getElementById('hygiene-pct').innerText = `${stats.hygiene}%`;
+
+            document.getElementById('happiness-bar').style.width = `${stats.happiness}%`;
+            document.getElementById('happiness-pct').innerText = `${stats.happiness}%`;
+        }
+
+        // --- Day & Night toggles ---
+        function generateStars() {
+            const starsContainer = document.getElementById('stars');
+            starsContainer.innerHTML = '';
+            for (let i = 0; i < 40; i++) {
+                const star = document.createElement('div');
+                star.className = 'absolute bg-white rounded-full opacity-60';
+                star.style.width = `${Math.random() * 2 + 1}px`;
+                star.style.height = star.style.width;
+                star.style.top = `${Math.random() * 60}%`;
+                star.style.left = `${Math.random() * 100}%`;
+                // Randomized gentle pulsing
+                star.style.animation = `pulse ${2 + Math.random() * 3}s infinite alternate`;
+                starsContainer.appendChild(star);
+            }
+        }
+
+        function toggleDayNight() {
+            const meadow = document.getElementById('meadow');
+            const nearHill = document.getElementById('near-hill');
+            const stars = document.getElementById('stars');
+            const sunSvg = document.getElementById('sun-svg');
+            const moonSvg = document.getElementById('moon-svg');
+            const nightOverlay = document.getElementById('night-overlay');
+
+            isDay = !isDay;
+
+            if (isDay) {
+                // Switch to day
+                meadow.className = "relative w-full h-[450px] rounded-2xl overflow-hidden shadow-inner transition-all duration-1000 bg-gradient-to-b from-sky-300 via-sky-200 to-emerald-100 border border-white/20";
+                nearHill.className = "absolute bottom-0 w-[150%] left-[-10%] h-28 text-emerald-400 transition-colors duration-1000";
+                stars.style.opacity = 0;
+                nightOverlay.style.opacity = 0;
+                sunSvg.classList.remove('hidden');
+                moonSvg.classList.add('hidden');
+                showSpeechBubble("Good morning!", 2000);
+            } else {
+                // Switch to night
+                meadow.className = "relative w-full h-[450px] rounded-2xl overflow-hidden shadow-inner transition-all duration-1000 bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 border border-slate-800";
+                nearHill.className = "absolute bottom-0 w-[150%] left-[-10%] h-28 text-emerald-950 transition-colors duration-1000";
+                stars.style.opacity = 1;
+                nightOverlay.style.opacity = 0.4;
+                sunSvg.classList.add('hidden');
+                moonSvg.classList.remove('hidden');
+                showSpeechBubble("Yawn... sleep tight! 🌙", 2500);
+            }
+            playSound('quack');
+        }
+
+
+        // --- Pet Interactions & Pathing ---
+        function interact(action) {
+            if (isMoving) return; // Prevent spamming actions during waddling
+            isMoving = true;
+
+            let targetLeft = "40%";
+            let targetBottom = "32px";
+            let stationId = "";
+
+            if (action === 'water') {
+                targetLeft = "10%";
+                targetBottom = "40px";
+                stationId = "station-water";
+            } else if (action === 'bread') {
+                targetLeft = "46%";
+                targetBottom = "100px";
+                stationId = "station-bread";
+            } else if (action === 'soap') {
+                targetLeft = "72%";
+                targetBottom = "40px";
+                stationId = "station-soap";
+            }
+
+            // Face target direction
+            const duckRect = duck.getBoundingClientRect();
+            const stationElement = document.getElementById(stationId);
+            const stationRect = stationElement.getBoundingClientRect();
+            
+            // Base vector model is facing right. 
+            // If station's left coordinate is less than duck's left, we must flip left (scaleX(-1)). Otherwise face right (scaleX(1)).
+            const direction = stationRect.left < duckRect.left ? -1 : 1; 
+            duck.style.transform = `scaleX(${direction})`;
+
+            // Start Waddling animation
+            duckSprite.className = "animate-waddle relative";
+
+            // Move Jeff to the Target Station
+            duck.style.left = targetLeft;
+            duck.style.bottom = targetBottom;
+
+            // Wait for transition to finish (1.5s)
+            setTimeout(() => {
+                // Arrived! Stop waddling
+                duckSprite.className = "animate-bob relative";
+
+                // Perform the respective action
+                if (action === 'water') {
+                    drinkWater();
+                } else if (action === 'bread') {
+                    eatFood();
+                } else if (action === 'soap') {
+                    bathe();
+                }
+            }, 1500);
+        }
+
+        // --- Interaction Event Functions ---
+        function eatFood() {
+            // Munching animation and particles
+            let nomCount = 0;
+            const nomInterval = setInterval(() => {
+                if (nomCount >= 3) {
+                    clearInterval(nomInterval);
+                    finishInteraction('bread');
+                } else {
+                    playSound('nom');
+                    spawnParticles('crumb');
+                    // Tilt wing / head animation slightly
+                    duckWing.style.transform = "rotate(20deg)";
+                    setTimeout(() => duckWing.style.transform = "rotate(0deg)", 150);
+                    nomCount++;
+                }
+            }, 300);
+
+            showSpeechBubble("Nom nom nom! Thank you!!! 🍞", 2000);
+        }
+
+        function drinkWater() {
+            let gulpCount = 0;
+            const gulpInterval = setInterval(() => {
+                if (gulpCount >= 3) {
+                    clearInterval(gulpInterval);
+                    finishInteraction('water');
+                } else {
+                    playSound('gulp');
+                    spawnParticles('water-drop');
+                    duckSprite.style.transform = "translateY(-4px) scaleY(1.05)";
+                    setTimeout(() => duckSprite.style.transform = "none", 150);
+                    gulpCount++;
+                }
+            }, 350);
+
+            showSpeechBubble("Gulp gulp gulp! Refreshing! 💧", 2000);
+        }
+
+        // Splashing bubble spawning
+        function bathe() {
+            // Splashing state
+            duckSprite.className = "animate-splash relative";
+            let splashCount = 0;
+
+            const splashInterval = setInterval(() => {
+                if (splashCount >= 5) {
+                    clearInterval(splashInterval);
+                    duckSprite.className = "animate-bob relative";
+                    finishInteraction('soap');
+                } else {
+                    playSound('splash');
+                    spawnParticles('bubble');
+                    splashCount++;
+                }
+            }, 400);
+
+            showSpeechBubble("Splish splash, I'm takin' a bath! 🧼✨", 2500);
+        }
+
+        function finishInteraction(type) {
+            // Update stats
+            if (type === 'bread') {
+                stats.hunger = Math.min(100, stats.hunger + 25);
+                stats.happiness = Math.min(100, stats.happiness + 5);
+                addXP(15);
+            } else if (type === 'water') {
+                stats.thirst = Math.min(100, stats.thirst + 30);
+                stats.happiness = Math.min(100, stats.happiness + 5);
+                addXP(15);
+            } else if (type === 'soap') {
+                stats.hygiene = Math.min(100, stats.hygiene + 40);
+                stats.happiness = Math.min(100, stats.happiness + 10);
+                addXP(25);
+            }
+
+            updateStatUI();
+
+            // Head home after a brief rest
+            setTimeout(() => {
+                returnHome();
+            }, 1000);
+        }
+
+        function returnHome() {
+            // Dynamically calculate which direction home is (40% mark) to face correctly
+            const duckRect = duck.getBoundingClientRect();
+            const meadowRect = document.getElementById('meadow').getBoundingClientRect();
+            const targetHomeX = meadowRect.left + (meadowRect.width * 0.4);
+            
+            // If home coordinates are to the left of Jeff, face left (-1), otherwise face right (1)
+            const direction = targetHomeX < duckRect.left ? -1 : 1;
+            duck.style.transform = `scaleX(${direction})`;
+            
+            duckSprite.className = "animate-waddle relative";
+
+            // Return to default center position
+            duck.style.left = "40%";
+            duck.style.bottom = "32px";
+
+            setTimeout(() => {
+                duckSprite.className = "animate-bob relative";
+                isMoving = false;
+            }, 1500);
+        }
+
+        // --- Pet / Say Hello ---
+        function petJeff() {
+            if (isMoving) return;
+            playSound('quack');
+            
+            // Show blush & jump joyfully
+            duckBlush.style.opacity = "0.7";
+            duckSprite.style.transform = "scale(1.15) translateY(-10px)";
+            
+            stats.happiness = Math.min(100, stats.happiness + 15);
+            updateStatUI();
+            addXP(10);
+
+            const phrases = [
+                "Hey! My name is Jeff! 🦆",
+                "Quack quack! I love you! ❤️",
+                "You make my meadow so happy!",
+                "Pet me more! That feels great!"
+            ];
+            const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
+            showSpeechBubble(randomPhrase, 2500);
+
+            setTimeout(() => {
+                duckBlush.style.opacity = "0";
+                duckSprite.style.transform = "none";
+            }, 500);
+        }
+
+        // --- UI Speech Bubble Engine ---
+        let speechTimeout;
+        function showSpeechBubble(text, duration) {
+            clearTimeout(speechTimeout);
+            speechText.innerText = text;
+            speechBubble.style.opacity = "1";
+            speechBubble.style.transform = "translateY(0)";
+
+            // Dynamically position bubble relative to Jeff's current coordinate
+            updateBubblePosition();
+
+            // Listen to transition/layout changes
+            const posInterval = setInterval(updateBubblePosition, 50);
+
+            speechTimeout = setTimeout(() => {
+                speechBubble.style.opacity = "0";
+                speechBubble.style.transform = "translateY(10px)";
+                clearInterval(posInterval);
+            }, duration);
+        }
+
+        function updateBubblePosition() {
+            const duckRect = duck.getBoundingClientRect();
+            const meadowRect = document.getElementById('meadow').getBoundingClientRect();
+            
+            // Compute coordinate offsets inside meadow container
+            const relativeLeft = duckRect.left - meadowRect.left + (duckRect.width / 2) - 80; // center it horizontally
+            const relativeBottom = meadowRect.bottom - duckRect.top + 5; // right above duck head
+
+            speechBubble.style.left = `${relativeLeft}px`;
+            speechBubble.style.bottom = `${relativeBottom}px`;
+        }
+
+        // --- Level & Progression Engine ---
+        function addXP(amount) {
+            xp += amount;
+            if (xp >= xpNeeded) {
+                level++;
+                xp = xp - xpNeeded;
+                playSound('level');
+                document.getElementById('level-display').innerText = level;
+                
+                // Show celebration speech
+                showSpeechBubble(`✨ HOORAY! I leveled up to Level ${level}! ✨`, 4000);
+                
+                // Jump animation
+                duckSprite.style.animation = "splash 0.3s ease-in-out infinite";
+                setTimeout(() => {
+                    duckSprite.className = "animate-bob relative";
+                    duckSprite.style.animation = "";
+                }, 2000);
+            }
+            document.getElementById('xp-bar').style.width = `${(xp / xpNeeded) * 100}%`;
+        }
+
+        // --- Decorative Particle Spawner ---
+        function spawnParticles(type) {
+            const container = document.getElementById('meadow');
+            const duckRect = duck.getBoundingClientRect();
+            const meadowRect = container.getBoundingClientRect();
+
+            // Coordinate ranges near duck beak or body
+            const x = duckRect.left - meadowRect.left + 50 + (Math.random() * 30 - 15);
+            const y = meadowRect.bottom - duckRect.bottom + 60 + (Math.random() * 20 - 10);
+
+            for (let i = 0; i < 8; i++) {
+                const particle = document.createElement('div');
+                if (type === 'bubble') {
+                    particle.className = 'bubble';
+                    const size = Math.random() * 12 + 6;
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                } else if (type === 'crumb') {
+                    particle.className = 'crumb';
+                    const size = Math.random() * 6 + 4;
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                } else { // water drops
+                    particle.className = 'bubble';
+                    particle.style.background = '#60A5FA';
+                    particle.style.borderColor = '#3B82F6';
+                    const size = Math.random() * 8 + 4;
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                }
+
+                particle.style.left = `${x + (Math.random() * 40 - 20)}px`;
+                particle.style.bottom = `${y + (Math.random() * 30 - 15)}px`;
+                container.appendChild(particle);
+
+                // Auto-cleanup DOM
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
     </script>
-
 </body>
-</html> 
+</html>
