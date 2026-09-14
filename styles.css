@@ -1,0 +1,69 @@
+body {
+    font-family: 'Quicksand', sans-serif;
+    user-select: none;
+}
+.heading-font {
+    font-family: 'Fredoka One', cursive;
+}
+
+/* Smooth movement transition for Jeff */
+#duck {
+    transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1), bottom 1.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+}
+
+/* Idle Bobbing Animation */
+@keyframes bob {
+    0%, 100% { transform: translateY(0px) scaleY(1); }
+    50% { transform: translateY(-6px) scaleY(0.98); }
+}
+.animate-bob {
+    animation: bob 3s ease-in-out infinite;
+}
+
+/* Waddle Animation while moving */
+@keyframes waddle {
+    0%, 100% { transform: rotate(-5deg) translateY(0); }
+    50% { transform: rotate(5deg) translateY(-8px); }
+}
+.animate-waddle {
+    animation: waddle 0.25s ease-in-out infinite;
+}
+
+/* Splash Animation for bathing */
+@keyframes splash {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-15px) scale(1.05) rotate(3deg); }
+}
+.animate-splash {
+    animation: splash 0.4s ease-in-out infinite;
+}
+
+/* Sun spinning animation */
+@keyframes spin-slow {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+    animation: spin-slow 20s linear infinite;
+}
+
+/* Particle animations */
+@keyframes float-up {
+    0% { transform: translateY(0) scale(0.8); opacity: 1; }
+    100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
+}
+.bubble {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    animation: float-up 1s ease-out forwards;
+    pointer-events: none;
+}
+.crumb {
+    position: absolute;
+    background: #d7ccc8;
+    border-radius: 3px;
+    animation: float-up 0.8s ease-out forwards;
+    pointer-events: none;
+}
